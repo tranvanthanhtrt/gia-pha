@@ -142,39 +142,44 @@
                 <button class="btn btn-icon" id="btnCloseSettings"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>Tên dòng họ</label>
-                    <input type="text" id="settingFamilyName" placeholder="VD: Họ Nguyễn">
-                </div>
-                <div class="form-group" style="display:none">
-                    <label>Chế độ dữ liệu</label>
-                    <select id="settingDataMode" disabled>
-                        <option value="supabase">Supabase (online)</option>
-                    </select>
-                </div>
-                <div id="supabaseSettings">
+                <div id="settingsAdminContent">
                     <div class="form-group">
-                        <label>Supabase URL</label>
-                        <input type="url" id="settingSupabaseUrl" placeholder="https://xxx.supabase.co">
+                        <label>Tên dòng họ</label>
+                        <input type="text" id="settingFamilyName" placeholder="VD: Họ Nguyễn">
                     </div>
+                    <div class="form-group" style="display:none">
+                        <label>Chế độ dữ liệu</label>
+                        <select id="settingDataMode" disabled>
+                            <option value="supabase">Supabase (online)</option>
+                        </select>
+                    </div>
+                    <div id="supabaseSettings">
+                        <div class="form-group">
+                            <label>Supabase URL</label>
+                            <input type="url" id="settingSupabaseUrl" placeholder="https://xxx.supabase.co">
+                        </div>
+                        <div class="form-group">
+                            <label>Supabase Anon Key</label>
+                            <input type="text" id="settingSupabaseKey" placeholder="eyJhbG...">
+                        </div>
+                    </div>
+                    <hr>
                     <div class="form-group">
-                        <label>Supabase Anon Key</label>
-                        <input type="text" id="settingSupabaseKey" placeholder="eyJhbG...">
+                        <label>Xuất / Nhập dữ liệu</label>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" id="btnExportData"><i class="fas fa-download"></i> Xuất JSON</button>
+                            <button class="btn btn-secondary" id="btnImportData"><i class="fas fa-upload"></i> Nhập JSON</button>
+                            <input type="file" id="importFile" accept=".json" style="display:none">
+                        </div>
                     </div>
+                    <hr>
+                    <button class="btn btn-danger btn-block" id="btnLoadDemo" style="display:none">
+                        <i class="fas fa-magic"></i> Tải dữ liệu mẫu
+                    </button>
                 </div>
-                <hr>
-                <div class="form-group">
-                    <label>Xuất / Nhập dữ liệu</label>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" id="btnExportData"><i class="fas fa-download"></i> Xuất JSON</button>
-                        <button class="btn btn-secondary" id="btnImportData"><i class="fas fa-upload"></i> Nhập JSON</button>
-                        <input type="file" id="importFile" accept=".json" style="display:none">
-                    </div>
+                <div id="settingsGuestHint" style="display:none; text-align:center; padding:18px 8px; color: var(--text-secondary);">
+                    Vui lòng đăng nhập admin để xem và chỉnh sửa cài đặt.
                 </div>
-                <hr>
-                <button class="btn btn-danger btn-block" id="btnLoadDemo" style="display:none">
-                    <i class="fas fa-magic"></i> Tải dữ liệu mẫu
-                </button>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="btnLogin"><i class="fas fa-user-lock"></i> Admin</button>
@@ -188,6 +193,9 @@
         <button class="btn btn-primary" id="btnZoomOutMobile" title="Thu nhỏ"><i class="fas fa-search-minus"></i></button>
         <button class="btn btn-primary" id="btnFitViewMobile" title="Vừa màn hình"><i class="fas fa-expand"></i></button>
         <button class="btn btn-primary" id="btnZoomInMobile" title="Phóng to"><i class="fas fa-search-plus"></i></button>
+    </div>
+    <div class="zoom-slider-wrap" id="zoomSliderWrap">
+        <input type="range" id="zoomSlider" min="30" max="200" value="50" step="5" orient="vertical">
     </div>
 
     <!-- Toast -->

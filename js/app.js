@@ -1,7 +1,7 @@
 // ===== MAIN APP =====
 const App = {
     members: [],
-    zoom: 1,
+    zoom: 0.5,
     isPanning: false,
     startX: 0, startY: 0,
     scrollLeft: 0, scrollTop: 0,
@@ -14,6 +14,7 @@ const App = {
         this.setupEvents();
         this.updateStats();
         this.loadSettings();
+        this.setZoom(this.zoom);
         this.updateAdminUI();
     },
 
@@ -46,13 +47,19 @@ const App = {
         // Zoom
         document.getElementById('btnZoomIn').onclick = () => this.setZoom(this.zoom + 0.15);
         document.getElementById('btnZoomOut').onclick = () => this.setZoom(this.zoom - 0.15);
-        document.getElementById('btnFitView').onclick = () => this.setZoom(1);
+        document.getElementById('btnFitView').onclick = () => this.setZoom(0.5);
         const mIn = document.getElementById('btnZoomInMobile');
         const mOut = document.getElementById('btnZoomOutMobile');
         const mFit = document.getElementById('btnFitViewMobile');
         if (mIn) mIn.onclick = () => this.setZoom(this.zoom + 0.15);
         if (mOut) mOut.onclick = () => this.setZoom(this.zoom - 0.15);
-        if (mFit) mFit.onclick = () => this.setZoom(1);
+        if (mFit) mFit.onclick = () => this.setZoom(0.5);
+
+        const zoomSlider = document.getElementById('zoomSlider');
+        if (zoomSlider) {
+            zoomSlider.value = Math.round(this.zoom * 100).toString();
+            zoomSlider.oninput = (e) => this.setZoom(parseInt(e.target.value, 10) / 100);
+        }
 
         const mobileZoomControls = document.getElementById('mobileZoomControls');
         if (mobileZoomControls) {
@@ -155,6 +162,8 @@ const App = {
     setZoom(val) {
         this.zoom = Math.max(0.3, Math.min(2, val));
         document.getElementById('treeContainer').style.transform = `scale(${this.zoom})`;
+        const zoomSlider = document.getElementById('zoomSlider');
+        if (zoomSlider) zoomSlider.value = Math.round(this.zoom * 100).toString();
         // With absolute positioning, SVG coordinates are fixed — no redraw needed
     },
 
@@ -355,10 +364,11 @@ const App = {
     openSettings() {
         const settings = DataStore.getSettings();
         document.getElementById('settingFamilyName').value = settings.familyName || '';
-        document.getElementById('settingDataMode').value = settings.mode || 'local';
+        document.getElementById('settingDataMode').value = settings.mode || 'supabase';
         document.getElementById('settingSupabaseUrl').value = settings.supabaseUrl || '';
         document.getElementById('settingSupabaseKey').value = settings.supabaseKey || '';
-        document.getElementById('supabaseSettings').style.display = settings.mode === 'supabase' ? 'block' : 'none';
+        document.getElementById('supabaseSettings').style.display = 'block';
+        this.updateAdminUI();
         document.getElementById('settingsOverlay').classList.add('active');
     },
 
@@ -467,10 +477,18 @@ const App = {
         const addBtn = document.getElementById('btnAddMember');
         const settingsBtn = document.getElementById('btnSettings');
         const loginBtn = document.getElementById('btnLogin');
+        const settingsAdminContent = document.getElementById('settingsAdminContent');
+        const settingsGuestHint = document.getElementById('settingsGuestHint');
+        const saveBtn = document.getElementById('btnSaveSettings');
+
         addBtn.disabled = !admin;
         settingsBtn.disabled = false;
         loginBtn.classList.toggle('btn-danger', admin);
-        loginBtn.innerHTML = admin ? '<i class="fas fa-sign-out-alt"></i> Thoát admin' : '<i class="fas fa-user-lock"></i> Admin';
+        loginBtn.innerHTML = admin ? '<i class="fas fa-sign-out-alt"></i> Thoát admin' : '<i class="fas fa-user-lock"></i> Đăng nhập admin';
+
+        if (settingsAdminContent) settingsAdminContent.style.display = admin ? 'block' : 'none';
+        if (settingsGuestHint) settingsGuestHint.style.display = admin ? 'none' : 'block';
+        if (saveBtn) saveBtn.style.display = admin ? 'inline-flex' : 'none';
     },
 
     toast(msg, type = '') {
