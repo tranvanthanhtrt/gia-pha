@@ -23,6 +23,11 @@ const App = {
     loadSettings() {
         const settings = DataStore.getSettings();
         document.getElementById('familyName').textContent = settings.familyName || 'Gia Phả';
+        document.getElementById('settingFamilyName').value = settings.familyName || '';
+        document.getElementById('settingDataMode').value = settings.mode || 'local';
+        document.getElementById('settingSupabaseUrl').value = settings.supabaseUrl || '';
+        document.getElementById('settingSupabaseKey').value = settings.supabaseKey || '';
+        document.getElementById('supabaseSettings').style.display = settings.mode === 'supabase' ? 'block' : 'none';
     },
 
     updateStats() {
@@ -93,6 +98,16 @@ const App = {
         };
         document.getElementById('btnSaveSettings').onclick = () => this.saveSettings();
         document.getElementById('btnLoadDemo').onclick = () => this.loadDemo();
+        document.getElementById('settingSupabaseUrl').oninput = (e) => {
+            if (document.getElementById('settingDataMode').value === 'supabase') {
+                DataStore.supabaseUrl = e.target.value;
+            }
+        };
+        document.getElementById('settingSupabaseKey').oninput = (e) => {
+            if (document.getElementById('settingDataMode').value === 'supabase') {
+                DataStore.supabaseKey = e.target.value;
+            }
+        };
         document.getElementById('btnExportData').onclick = () => this.exportData();
         document.getElementById('btnImportData').onclick = () => document.getElementById('importFile').click();
         document.getElementById('importFile').onchange = (e) => this.importData(e);
@@ -291,6 +306,9 @@ const App = {
         const settings = DataStore.getSettings();
         document.getElementById('settingFamilyName').value = settings.familyName || '';
         document.getElementById('settingDataMode').value = settings.mode || 'local';
+        document.getElementById('settingSupabaseUrl').value = settings.supabaseUrl || '';
+        document.getElementById('settingSupabaseKey').value = settings.supabaseKey || '';
+        document.getElementById('supabaseSettings').style.display = settings.mode === 'supabase' ? 'block' : 'none';
         document.getElementById('settingsOverlay').classList.add('active');
     },
 
@@ -307,7 +325,9 @@ const App = {
         };
         DataStore.saveSettings(settings);
         document.getElementById('familyName').textContent = settings.familyName;
+        document.getElementById('supabaseSettings').style.display = settings.mode === 'supabase' ? 'block' : 'none';
         this.closeSettings();
+        this.loadData();
         this.toast('Đã lưu cài đặt!', 'success');
     },
 

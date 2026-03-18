@@ -14,20 +14,57 @@ const DataStore = {
             this.mode = s.mode || 'local';
             this.supabaseUrl = s.supabaseUrl || '';
             this.supabaseKey = s.supabaseKey || '';
+            if (this.mode === 'supabase' && this.supabaseUrl && this.supabaseKey) {
+                this._initSupabase();
+            }
         }
+    },
+
+    _initSupabase() {
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase SDK not loaded');
+            return;
+        }
+        this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
     },
 
     // ===== MEMBERS CRUD =====
     async getMembers() {
-        if (this.mode === 'local') {
-            const data = localStorage.getItem('giapha_members');
-            return data ? JSON.parse(data) : [];
+        if (this.mode === 'supabase' && this.supabase) {
+            const { data, error } = await this.supabase
+                .from('family_members')
+                .select('*')
+                .order('generation', { ascending: true })
+                .order('name', { ascending: true });
+            if (error) {
+                console.error('Supabase getMembers error:', error);
+                return [];
+            }
+            return data || [];
         }
-        // Supabase mode would go here
-        return [];
+        const data = localStorage.getItem('giapha_members');
+        return data ? JSON.parse(data) : [];
     },
 
     async saveMember(member) {
+        if (this.mode === 'supabase' && this.supabase) {
+            const payload = { ...member };
+            if (!payload.id) {
+                payload.id = this.generateId();
+                payload.created_at = new Date().toISOString();
+            }
+            const { data, error } = await this.supabase
+                .from('family_members')
+                .upsert(payload, { onConflict: 'id' })
+                .select()
+                .single();
+            if (error) {
+                console.error('Supabase saveMember error:', error);
+                return member;
+            }
+            return data;
+        }
+
         const members = await this.getMembers();
         if (member.id) {
             const idx = members.findIndex(m => m.id === member.id);
@@ -43,8 +80,14 @@ const DataStore = {
     },
 
     async deleteMember(id) {
+        if (this.mode === 'supabase' && this.supabase) {
+            // clear spouse/parent refs then delete
+            await this.supabase.from('family_members').update({ spouse_id: null }).eq('spouse_id', id);
+            await this.supabase.from('family_members').update({ parent_id: null }).eq('parent_id', id);
+            await this.supabase.from('family_members').delete().eq('id', id);
+            return;
+        }
         let members = await this.getMembers();
-        // Remove spouse references
         members.forEach(m => {
             if (m.spouse_id === id) m.spouse_id = null;
             if (m.parent_id === id) m.parent_id = null;
@@ -66,6 +109,11 @@ const DataStore = {
     saveSettings(settings) {
         localStorage.setItem('giapha_settings', JSON.stringify(settings));
         this.mode = settings.mode || 'local';
+        this.supabaseUrl = settings.supabaseUrl || '';
+        this.supabaseKey = settings.supabaseKey || '';
+        if (this.mode === 'supabase' && this.supabaseUrl && this.supabaseKey) {
+            this._initSupabase();
+        }
     },
 
     // ===== IMPORT/EXPORT =====
@@ -78,6 +126,16 @@ const DataStore = {
     async importData(jsonStr) {
         try {
             const data = JSON.parse(jsonStr);
+            if (this.mode === 'supabase' && this.supabase) {
+                if (data.members) {
+                    await this.supabase.from('family_members').delete().neq('id', '');
+                    if (data.members.length) {
+                        await this.supabase.from('family_members').upsert(data.members);
+                    }
+                }
+                if (data.settings) this.saveSettings(data.settings);
+                return true;
+            }
             if (data.members) this._saveLocal(data.members);
             if (data.settings) this.saveSettings(data.settings);
             return true;
@@ -140,6 +198,13 @@ const DataStore = {
             // --- Con của Phong & Thúy ---
             { id: '25', name: 'Chu Minh Khôi',    gender: 'male',   birth_date: '2023-01-08', death_date: null, parent_id: '18', spouse_id: null, generation: 4, bio: 'Em bé.', photo_url: '' },
         ];
+
+        if (this.mode === 'supabase' && this.supabase) {
+            await this.supabase.from('family_members').delete().neq('id', '');
+            await this.supabase.from('family_members').upsert(demo);
+            this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'supabase', supabaseUrl: this.supabaseUrl, supabaseKey: this.supabaseKey });
+            return;
+        }
         this._saveLocal(demo);
         this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'local' });
     },
