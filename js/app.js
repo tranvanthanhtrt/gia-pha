@@ -5,13 +5,16 @@ const App = {
     isPanning: false,
     startX: 0, startY: 0,
     scrollLeft: 0, scrollTop: 0,
+    isAdmin: false,
 
     async init() {
         DataStore.init();
+        this.isAdmin = localStorage.getItem('giapha_admin') === 'true';
         await this.loadData();
         this.setupEvents();
         this.updateStats();
         this.loadSettings();
+        this.updateAdminUI();
     },
 
     async loadData() {
@@ -73,6 +76,9 @@ const App = {
                 this.setZoom(this.zoom + (e.deltaY > 0 ? -0.1 : 0.1));
             }
         }, { passive: false });
+
+        // Admin login
+        document.getElementById('btnLogin').onclick = () => this.handleLogin();
 
         // Add member
         document.getElementById('btnAddMember').onclick = () => this.openAddModal();
@@ -190,6 +196,10 @@ const App = {
 
     // ===== ADD/EDIT MODAL =====
     openAddModal() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được thêm thành viên', 'error');
+            return;
+        }
         document.getElementById('modalTitle').textContent = 'Thêm Thành Viên';
         document.getElementById('memberForm').reset();
         document.getElementById('memberId').value = '';
@@ -200,6 +210,10 @@ const App = {
     },
 
     openEditModal(id) {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được sửa thông tin', 'error');
+            return;
+        }
         this.closePanel();
         const m = this.members.find(x => x.id === id);
         if (!m) return;
@@ -251,6 +265,10 @@ const App = {
     },
 
     async saveMember() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được lưu', 'error');
+            return;
+        }
         const name = document.getElementById('memberName').value.trim();
         if (!name) {
             this.toast('Vui lòng nhập họ tên', 'error');
@@ -283,6 +301,10 @@ const App = {
     },
 
     async deleteMember() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được xóa', 'error');
+            return;
+        }
         const id = document.getElementById('memberId').value;
         if (!id) return;
 
@@ -303,6 +325,10 @@ const App = {
 
     // ===== SETTINGS =====
     openSettings() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được mở cài đặt', 'error');
+            return;
+        }
         const settings = DataStore.getSettings();
         document.getElementById('settingFamilyName').value = settings.familyName || '';
         document.getElementById('settingDataMode').value = settings.mode || 'local';
@@ -332,15 +358,23 @@ const App = {
     },
 
     async loadDemo() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được tải dữ liệu mẫu', 'error');
+            return;
+        }
         if (!confirm('Tải dữ liệu mẫu sẽ thay thế dữ liệu hiện tại. Tiếp tục?')) return;
         await DataStore.loadDemoData();
         this.closeSettings();
         await this.loadData();
         this.loadSettings();
-        this.toast('Đã tải dữ liệu mẫu (3 đời, 15 thành viên)!', 'success');
+        this.toast('Đã tải dữ liệu mẫu!', 'success');
     },
 
     async exportData() {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được xuất', 'error');
+            return;
+        }
         const json = await DataStore.exportData();
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -353,6 +387,10 @@ const App = {
     },
 
     async importData(e) {
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được nhập dữ liệu', 'error');
+            return;
+        }
         const file = e.target.files[0];
         if (!file) return;
         const text = await file.text();
@@ -382,6 +420,38 @@ const App = {
         let age = d.getFullYear() - b.getFullYear();
         if (d.getMonth() < b.getMonth() || (d.getMonth() === b.getMonth() && d.getDate() < b.getDate())) age--;
         return age > 0 ? age : null;
+    },
+
+    // ===== ADMIN =====
+    handleLogin() {
+        if (this.isAdmin) {
+            this.isAdmin = false;
+            localStorage.removeItem('giapha_admin');
+            this.updateAdminUI();
+            this.toast('Đã đăng xuất admin', 'success');
+            return;
+        }
+        const user = prompt('Tài khoản admin?');
+        const pass = user ? prompt('Mật khẩu?') : null;
+        if (user === 'clack' && pass === '123456') {
+            this.isAdmin = true;
+            localStorage.setItem('giapha_admin', 'true');
+            this.updateAdminUI();
+            this.toast('Đăng nhập admin thành công', 'success');
+        } else {
+            this.toast('Sai tài khoản/mật khẩu', 'error');
+        }
+    },
+
+    updateAdminUI() {
+        const admin = this.isAdmin;
+        const addBtn = document.getElementById('btnAddMember');
+        const settingsBtn = document.getElementById('btnSettings');
+        const loginBtn = document.getElementById('btnLogin');
+        addBtn.disabled = !admin;
+        settingsBtn.disabled = !admin;
+        loginBtn.classList.toggle('btn-danger', admin);
+        loginBtn.innerHTML = admin ? '<i class="fas fa-sign-out-alt"></i> Thoát admin' : '<i class="fas fa-user-lock"></i> Admin';
     },
 
     toast(msg, type = '') {
