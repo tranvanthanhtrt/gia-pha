@@ -47,6 +47,12 @@ const App = {
         document.getElementById('btnZoomIn').onclick = () => this.setZoom(this.zoom + 0.15);
         document.getElementById('btnZoomOut').onclick = () => this.setZoom(this.zoom - 0.15);
         document.getElementById('btnFitView').onclick = () => this.setZoom(1);
+        const mIn = document.getElementById('btnZoomInMobile');
+        const mOut = document.getElementById('btnZoomOutMobile');
+        const mFit = document.getElementById('btnFitViewMobile');
+        if (mIn) mIn.onclick = () => this.setZoom(this.zoom + 0.15);
+        if (mOut) mOut.onclick = () => this.setZoom(this.zoom - 0.15);
+        if (mFit) mFit.onclick = () => this.setZoom(1);
 
         // Pan (drag to scroll)
         const wrapper = document.getElementById('treeWrapper');
@@ -75,6 +81,16 @@ const App = {
                 e.preventDefault();
                 this.setZoom(this.zoom + (e.deltaY > 0 ? -0.1 : 0.1));
             }
+        }, { passive: false });
+
+        // Disable double-tap zoom on mobile
+        let lastTouchEnd = 0;
+        wrapper.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
         }, { passive: false });
 
         // Admin login
