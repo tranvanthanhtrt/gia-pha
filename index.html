@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gia Phả - Cây Gia Đình</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <i class="fas fa-tree"></i>
+            <h1>Gia Phả</h1>
+        </div>
+        <div class="header-center">
+            <span class="family-name" id="familyName">Họ Nguyễn</span>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-icon" id="btnZoomIn" title="Phóng to"><i class="fas fa-search-plus"></i></button>
+            <button class="btn btn-icon" id="btnZoomOut" title="Thu nhỏ"><i class="fas fa-search-minus"></i></button>
+            <button class="btn btn-icon" id="btnFitView" title="Vừa màn hình"><i class="fas fa-expand"></i></button>
+            <div class="divider-v"></div>
+            <button class="btn btn-primary" id="btnAddMember"><i class="fas fa-plus"></i> Thêm</button>
+            <button class="btn btn-icon" id="btnSettings" title="Cài đặt"><i class="fas fa-cog"></i></button>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat"><i class="fas fa-users"></i> <span id="statTotal">0</span> thành viên</div>
+        <div class="stat"><i class="fas fa-layer-group"></i> <span id="statGenerations">0</span> đời</div>
+        <div class="stat"><i class="fas fa-heart"></i> <span id="statAlive">0</span> còn sống</div>
+    </div>
+
+    <!-- Tree Container -->
+    <div class="tree-wrapper" id="treeWrapper">
+        <div class="tree-container" id="treeContainer">
+            <!-- Tree will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Member Detail Panel -->
+    <div class="panel-overlay" id="panelOverlay"></div>
+    <div class="detail-panel" id="detailPanel">
+        <div class="panel-header">
+            <h3>Thông tin thành viên</h3>
+            <button class="btn btn-icon" id="btnClosePanel"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="panel-body" id="panelBody">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="memberModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm Thành Viên</h3>
+                <button class="btn btn-icon" id="btnCloseModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="memberForm">
+                    <input type="hidden" id="memberId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Họ và tên *</label>
+                            <input type="text" id="memberName" required placeholder="VD: Nguyễn Văn A">
+                        </div>
+                        <div class="form-group">
+                            <label>Giới tính *</label>
+                            <select id="memberGender" required>
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ngày sinh</label>
+                            <input type="date" id="memberBirth">
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày mất</label>
+                            <input type="date" id="memberDeath">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cha/Mẹ</label>
+                            <select id="memberParent">
+                                <option value="">-- Không có (gốc) --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Vợ/Chồng</label>
+                            <select id="memberSpouse">
+                                <option value="">-- Chưa có --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Đời thứ</label>
+                        <input type="number" id="memberGeneration" min="1" max="20" value="1" placeholder="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ảnh đại diện (URL)</label>
+                        <input type="url" id="memberPhoto" placeholder="https://example.com/photo.jpg">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tiểu sử / Ghi chú</label>
+                        <textarea id="memberBio" rows="3" placeholder="Thông tin thêm về thành viên..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelModal">Hủy</button>
+                <button class="btn btn-danger" id="btnDeleteMember" style="display:none">
+                    <i class="fas fa-trash"></i> Xóa
+                </button>
+                <button class="btn btn-primary" id="btnSaveMember">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsOverlay">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>Cài đặt</h3>
+                <button class="btn btn-icon" id="btnCloseSettings"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên dòng họ</label>
+                    <input type="text" id="settingFamilyName" placeholder="VD: Họ Nguyễn">
+                </div>
+                <div class="form-group">
+                    <label>Chế độ dữ liệu</label>
+                    <select id="settingDataMode">
+                        <option value="local">Local (lưu trên trình duyệt)</option>
+                        <option value="supabase">Supabase (online)</option>
+                    </select>
+                </div>
+                <div id="supabaseSettings" style="display:none">
+                    <div class="form-group">
+                        <label>Supabase URL</label>
+                        <input type="url" id="settingSupabaseUrl" placeholder="https://xxx.supabase.co">
+                    </div>
+                    <div class="form-group">
+                        <label>Supabase Anon Key</label>
+                        <input type="text" id="settingSupabaseKey" placeholder="eyJhbG...">
+                    </div>
+                </div>
+                <hr>
+                <div class="form-group">
+                    <label>Xuất / Nhập dữ liệu</label>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" id="btnExportData"><i class="fas fa-download"></i> Xuất JSON</button>
+                        <button class="btn btn-secondary" id="btnImportData"><i class="fas fa-upload"></i> Nhập JSON</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none">
+                    </div>
+                </div>
+                <hr>
+                <button class="btn btn-danger btn-block" id="btnLoadDemo">
+                    <i class="fas fa-magic"></i> Tải dữ liệu mẫu
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnSaveSettings">Lưu cài đặt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/data.js"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
