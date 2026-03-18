@@ -1,6 +1,13 @@
 // ===== DATA LAYER =====
 // Supports localStorage (default) and Supabase
 
+const DEFAULT_SETTINGS = {
+    familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)',
+    mode: 'supabase',
+    supabaseUrl: 'https://gyidiiqtutzakotfxnlm.supabase.co',
+    supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWRpaXF0dXR6YWtvdGZ4bmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjM3NzQsImV4cCI6MjA4OTM5OTc3NH0.OyO_D1QAJCwYKtHd40tREmtLlPuTjYwpkKdwniB5eyg'
+};
+
 const DataStore = {
     mode: 'local', // 'local' or 'supabase'
     supabaseUrl: '',
@@ -11,12 +18,16 @@ const DataStore = {
         const settings = localStorage.getItem('giapha_settings');
         if (settings) {
             const s = JSON.parse(settings);
-            this.mode = s.mode || 'local';
-            this.supabaseUrl = s.supabaseUrl || '';
-            this.supabaseKey = s.supabaseKey || '';
+            this.mode = s.mode || DEFAULT_SETTINGS.mode;
+            this.supabaseUrl = s.supabaseUrl || DEFAULT_SETTINGS.supabaseUrl;
+            this.supabaseKey = s.supabaseKey || DEFAULT_SETTINGS.supabaseKey;
             if (this.mode === 'supabase' && this.supabaseUrl && this.supabaseKey) {
                 this._initSupabase();
             }
+        } else {
+            // first run: use defaults and persist
+            this.saveSettings(DEFAULT_SETTINGS);
+            this._initSupabase();
         }
     },
 
@@ -103,7 +114,7 @@ const DataStore = {
     // ===== SETTINGS =====
     getSettings() {
         const data = localStorage.getItem('giapha_settings');
-        return data ? JSON.parse(data) : { familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'local' };
+        return data ? JSON.parse(data) : { ...DEFAULT_SETTINGS };
     },
 
     saveSettings(settings) {
