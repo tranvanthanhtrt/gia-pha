@@ -60,7 +60,7 @@ const DataStore = {
     // ===== SETTINGS =====
     getSettings() {
         const data = localStorage.getItem('giapha_settings');
-        return data ? JSON.parse(data) : { familyName: 'Họ Nguyễn', mode: 'local' };
+        return data ? JSON.parse(data) : { familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'local' };
     },
 
     saveSettings(settings) {
@@ -141,7 +141,7 @@ const DataStore = {
             { id: '25', name: 'Chu Minh Khôi',    gender: 'male',   birth_date: '2023-01-08', death_date: null, parent_id: '18', spouse_id: null, generation: 4, bio: 'Em bé.', photo_url: '' },
         ];
         this._saveLocal(demo);
-        this.saveSettings({ familyName: 'GIA PHẢ HỌ CHU VĂN', mode: 'local' });
+        this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'local' });
     },
 
     generateId() {
