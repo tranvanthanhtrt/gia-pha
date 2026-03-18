@@ -479,7 +479,10 @@ hr { border: none; border-top: 1px solid rgba(200,168,78,0.3); margin: 16px 0; }
 @media (max-width: 768px) {
     .header { padding: 10px 14px; }
     .header-center { display: none; }
-    .header-right .btn:not(.btn-icon):not(.btn-primary):not(.btn-admin) { display: none; }
+    .header-right #btnZoomIn,
+    .header-right #btnZoomOut,
+    .header-right #btnFitView { display: none; }
+    .header-right .btn:not(.btn-icon):not(.btn-primary) { display: none; }
     .stats-bar { font-size: 12px; gap: 14px; padding: 6px 14px; }
     .detail-panel { width: 100%; right: -100%; }
     .modal { width: 95vw; }
@@ -505,17 +508,21 @@ hr { border: none; border-top: 1px solid rgba(200,168,78,0.3); margin: 16px 0; }
         bottom: 14px;
         transform: translateX(-50%);
         display: flex;
-        gap: 10px;
+        gap: 14px;
         z-index: 999;
-        background: rgba(58, 42, 10, 0.85);
-        padding: 8px 10px;
+        background: rgba(58, 42, 10, 0.9);
+        padding: 10px 14px;
         border-radius: 999px;
         border: 1px solid var(--gold);
         backdrop-filter: blur(4px);
     }
 
     .mobile-zoom-controls .btn {
-        padding: 10px 12px;
+        width: 52px;
+        height: 52px;
+        padding: 0;
         border-radius: 999px;
+        font-size: 20px;
+        justify-content: center;
     }
 }

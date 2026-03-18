@@ -83,9 +83,9 @@ const App = {
             }
         }, { passive: false });
 
-        // Disable double-tap zoom on mobile
+        // Disable double-tap zoom on mobile (global)
         let lastTouchEnd = 0;
-        wrapper.addEventListener('touchend', (e) => {
+        document.addEventListener('touchend', (e) => {
             const now = Date.now();
             if (now - lastTouchEnd <= 300) {
                 e.preventDefault();
@@ -342,10 +342,6 @@ const App = {
 
     // ===== SETTINGS =====
     openSettings() {
-        if (!this.isAdmin) {
-            this.toast('Chỉ admin mới được mở cài đặt', 'error');
-            return;
-        }
         const settings = DataStore.getSettings();
         document.getElementById('settingFamilyName').value = settings.familyName || '';
         document.getElementById('settingDataMode').value = settings.mode || 'local';
@@ -360,6 +356,10 @@ const App = {
     },
 
     saveSettings() {
+        if (!this.isAdmin) {
+            this.toast('Đăng nhập admin để lưu cài đặt', 'error');
+            return;
+        }
         const settings = {
             familyName: document.getElementById('settingFamilyName').value || 'Gia Phả',
             mode: document.getElementById('settingDataMode').value,
@@ -457,7 +457,7 @@ const App = {
         const settingsBtn = document.getElementById('btnSettings');
         const loginBtn = document.getElementById('btnLogin');
         addBtn.disabled = !admin;
-        settingsBtn.disabled = !admin;
+        settingsBtn.disabled = false;
         loginBtn.classList.toggle('btn-danger', admin);
         loginBtn.innerHTML = admin ? '<i class="fas fa-sign-out-alt"></i> Thoát admin' : '<i class="fas fa-user-lock"></i> Admin';
     },
