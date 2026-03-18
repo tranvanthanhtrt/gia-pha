@@ -54,6 +54,17 @@ const App = {
         if (mOut) mOut.onclick = () => this.setZoom(this.zoom - 0.15);
         if (mFit) mFit.onclick = () => this.setZoom(1);
 
+        const mobileZoomControls = document.getElementById('mobileZoomControls');
+        if (mobileZoomControls) {
+            mobileZoomControls.addEventListener('dblclick', (e) => e.preventDefault());
+            mobileZoomControls.addEventListener('touchend', (e) => {
+                const now = Date.now();
+                if (!this._lastZoomTouchEnd) this._lastZoomTouchEnd = 0;
+                if (now - this._lastZoomTouchEnd <= 350) e.preventDefault();
+                this._lastZoomTouchEnd = now;
+            }, { passive: false });
+        }
+
         // Pan (drag to scroll)
         const wrapper = document.getElementById('treeWrapper');
         wrapper.addEventListener('mousedown', (e) => {
