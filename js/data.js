@@ -201,7 +201,7 @@ const DataStore = {
 
         if (this.mode === 'supabase' && this.supabase) {
             await this.supabase.from('family_members').delete().neq('id', '');
-            await this.supabase.from('family_members').upsert(demo);
+            await this.supabase.from('family_members').insert(demo);
             this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'supabase', supabaseUrl: this.supabaseUrl, supabaseKey: this.supabaseKey });
             return;
         }
