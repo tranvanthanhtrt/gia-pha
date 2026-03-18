@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
 };
 
 const DataStore = {
-    mode: 'local', // 'local' or 'supabase'
+    mode: 'supabase', // forced supabase
     supabaseUrl: '',
     supabaseKey: '',
     supabase: null,
@@ -18,10 +18,10 @@ const DataStore = {
         const settings = localStorage.getItem('giapha_settings');
         if (settings) {
             const s = JSON.parse(settings);
-            this.mode = s.mode || DEFAULT_SETTINGS.mode;
+            this.mode = 'supabase';
             this.supabaseUrl = s.supabaseUrl || DEFAULT_SETTINGS.supabaseUrl;
             this.supabaseKey = s.supabaseKey || DEFAULT_SETTINGS.supabaseKey;
-            if (this.mode === 'supabase' && this.supabaseUrl && this.supabaseKey) {
+            if (this.supabaseUrl && this.supabaseKey) {
                 this._initSupabase();
             }
         } else {
@@ -119,10 +119,10 @@ const DataStore = {
 
     saveSettings(settings) {
         localStorage.setItem('giapha_settings', JSON.stringify(settings));
-        this.mode = settings.mode || 'local';
-        this.supabaseUrl = settings.supabaseUrl || '';
-        this.supabaseKey = settings.supabaseKey || '';
-        if (this.mode === 'supabase' && this.supabaseUrl && this.supabaseKey) {
+        this.mode = 'supabase';
+        this.supabaseUrl = settings.supabaseUrl || DEFAULT_SETTINGS.supabaseUrl;
+        this.supabaseKey = settings.supabaseKey || DEFAULT_SETTINGS.supabaseKey;
+        if (this.supabaseUrl && this.supabaseKey) {
             this._initSupabase();
         }
     },
@@ -160,6 +160,7 @@ const DataStore = {
     // RULE: spouse_id is ONE-WAY. Only the blood-line member sets spouse_id.
     //       The married-in spouse has spouse_id: null, parent_id: null.
     async loadDemoData() {
+        return; // disabled demo seed
         const demo = [
             // ══════ ĐỜI 1 — Ông Bà Thủy Tổ ══════
             { id: '1',  name: 'Chu Văn Long',     gender: 'male',   birth_date: '1935-02-10', death_date: '2005-08-15', parent_id: null, spouse_id: '2',  generation: 1, bio: 'Ông Thủy Tổ dòng họ Chu. Thầy đồ Nho học.', photo_url: '' },

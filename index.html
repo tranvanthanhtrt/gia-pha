@@ -147,14 +147,13 @@
                     <label>Tên dòng họ</label>
                     <input type="text" id="settingFamilyName" placeholder="VD: Họ Nguyễn">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display:none">
                     <label>Chế độ dữ liệu</label>
-                    <select id="settingDataMode">
-                        <option value="local">Local (lưu trên trình duyệt)</option>
+                    <select id="settingDataMode" disabled>
                         <option value="supabase">Supabase (online)</option>
                     </select>
                 </div>
-                <div id="supabaseSettings" style="display:none">
+                <div id="supabaseSettings">
                     <div class="form-group">
                         <label>Supabase URL</label>
                         <input type="url" id="settingSupabaseUrl" placeholder="https://xxx.supabase.co">
@@ -174,7 +173,7 @@
                     </div>
                 </div>
                 <hr>
-                <button class="btn btn-danger btn-block" id="btnLoadDemo">
+                <button class="btn btn-danger btn-block" id="btnLoadDemo" style="display:none">
                     <i class="fas fa-magic"></i> Tải dữ liệu mẫu
                 </button>
             </div>

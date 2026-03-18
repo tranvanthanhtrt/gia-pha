@@ -103,7 +103,8 @@ const App = {
             if (e.target === e.currentTarget) this.closeSettings();
         };
         document.getElementById('btnSaveSettings').onclick = () => this.saveSettings();
-        document.getElementById('btnLoadDemo').onclick = () => this.loadDemo();
+        const demoBtn = document.getElementById('btnLoadDemo');
+        if (demoBtn) demoBtn.style.display = 'none';
         document.getElementById('settingSupabaseUrl').oninput = (e) => {
             if (document.getElementById('settingDataMode').value === 'supabase') {
                 DataStore.supabaseUrl = e.target.value;
@@ -358,16 +359,7 @@ const App = {
     },
 
     async loadDemo() {
-        if (!this.isAdmin) {
-            this.toast('Chỉ admin mới được tải dữ liệu mẫu', 'error');
-            return;
-        }
-        if (!confirm('Tải dữ liệu mẫu sẽ thay thế dữ liệu hiện tại. Tiếp tục?')) return;
-        await DataStore.loadDemoData();
-        this.closeSettings();
-        await this.loadData();
-        this.loadSettings();
-        this.toast('Đã tải dữ liệu mẫu!', 'success');
+        this.toast('Đã tắt chức năng tải dữ liệu mẫu', 'error');
     },
 
     async exportData() {
