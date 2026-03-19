@@ -26,8 +26,17 @@ const App = {
 
     loadSettings() {
         const settings = DataStore.getSettings();
-        document.getElementById('familyName').textContent = settings.familyName || 'Gia Phả';
-        document.getElementById('settingFamilyName').value = settings.familyName || '';
+        const oldLegacyName = 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)';
+        const familyName = !settings.familyName || settings.familyName === oldLegacyName
+            ? 'Gia phả Họ Trần Văn'
+            : settings.familyName;
+
+        if (familyName !== settings.familyName) {
+            DataStore.saveSettings({ ...settings, familyName });
+        }
+
+        document.getElementById('familyName').textContent = familyName;
+        document.getElementById('settingFamilyName').value = familyName;
         document.getElementById('settingDataMode').value = settings.mode || 'local';
         document.getElementById('settingSupabaseUrl').value = settings.supabaseUrl || '';
         document.getElementById('settingSupabaseKey').value = settings.supabaseKey || '';
@@ -47,13 +56,13 @@ const App = {
         // Zoom
         document.getElementById('btnZoomIn').onclick = () => this.setZoom(this.zoom + 0.15);
         document.getElementById('btnZoomOut').onclick = () => this.setZoom(this.zoom - 0.15);
-        document.getElementById('btnFitView').onclick = () => this.setZoom(0.5);
+        document.getElementById('btnFitView').onclick = () => this.resetZoomView();
         const mIn = document.getElementById('btnZoomInMobile');
         const mOut = document.getElementById('btnZoomOutMobile');
         const mFit = document.getElementById('btnFitViewMobile');
         if (mIn) mIn.onclick = () => this.setZoom(this.zoom + 0.15);
         if (mOut) mOut.onclick = () => this.setZoom(this.zoom - 0.15);
-        if (mFit) mFit.onclick = () => this.setZoom(0.5);
+        if (mFit) mFit.onclick = () => this.resetZoomView();
 
         const zoomSlider = document.getElementById('zoomSlider');
         if (zoomSlider) {
@@ -165,6 +174,12 @@ const App = {
         const zoomSlider = document.getElementById('zoomSlider');
         if (zoomSlider) zoomSlider.value = Math.round(this.zoom * 100).toString();
         // With absolute positioning, SVG coordinates are fixed — no redraw needed
+    },
+
+    resetZoomView() {
+        this.setZoom(0.5);
+        const wrapper = document.getElementById('treeWrapper');
+        wrapper.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     },
 
     // ===== MEMBER DETAIL PANEL =====
@@ -382,7 +397,7 @@ const App = {
             return;
         }
         const settings = {
-            familyName: document.getElementById('settingFamilyName').value || 'Gia Phả',
+            familyName: document.getElementById('settingFamilyName').value || 'Gia phả Họ Trần Văn',
             mode: document.getElementById('settingDataMode').value,
             supabaseUrl: document.getElementById('settingSupabaseUrl').value,
             supabaseKey: document.getElementById('settingSupabaseKey').value,

@@ -2,7 +2,7 @@
 // Supports localStorage (default) and Supabase
 
 const DEFAULT_SETTINGS = {
-    familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)',
+    familyName: 'Gia phả Họ Trần Văn',
     mode: 'supabase',
     supabaseUrl: 'https://gyidiiqtutzakotfxnlm.supabase.co',
     supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5aWRpaXF0dXR6YWtvdGZ4bmxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjM3NzQsImV4cCI6MjA4OTM5OTc3NH0.OyO_D1QAJCwYKtHd40tREmtLlPuTjYwpkKdwniB5eyg'
@@ -214,11 +214,11 @@ const DataStore = {
         if (this.mode === 'supabase' && this.supabase) {
             await this.supabase.from('family_members').delete().neq('id', '');
             await this.supabase.from('family_members').insert(demo);
-            this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'supabase', supabaseUrl: this.supabaseUrl, supabaseKey: this.supabaseKey });
+            this.saveSettings({ familyName: 'Gia phả Họ Trần Văn', mode: 'supabase', supabaseUrl: this.supabaseUrl, supabaseKey: this.supabaseKey });
             return;
         }
         this._saveLocal(demo);
-        this.saveSettings({ familyName: 'HỌ TRẦN - PHÁI TRẦN VĂN (Thôn Thanh Cần - Trọng Đức, xã Đan Điền, TP Huế)', mode: 'local' });
+        this.saveSettings({ familyName: 'Gia phả Họ Trần Văn', mode: 'local' });
     },
 
     generateId() {
