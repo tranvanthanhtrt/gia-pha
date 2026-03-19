@@ -169,8 +169,23 @@ const App = {
     },
 
     setZoom(val) {
-        this.zoom = Math.max(0.3, Math.min(2, val));
-        document.getElementById('treeContainer').style.transform = `scale(${this.zoom})`;
+        const wrapper = document.getElementById('treeWrapper');
+        const tree = document.getElementById('treeContainer');
+        const prevZoom = this.zoom;
+        const nextZoom = Math.max(0.3, Math.min(2, val));
+
+        // Keep viewport center stable while zooming
+        const centerX = wrapper.scrollLeft + wrapper.clientWidth / 2;
+        const centerY = wrapper.scrollTop + wrapper.clientHeight / 2;
+        const worldX = centerX / prevZoom;
+        const worldY = centerY / prevZoom;
+
+        this.zoom = nextZoom;
+        tree.style.transform = `scale(${this.zoom})`;
+
+        wrapper.scrollLeft = Math.max(0, worldX * this.zoom - wrapper.clientWidth / 2);
+        wrapper.scrollTop = Math.max(0, worldY * this.zoom - wrapper.clientHeight / 2);
+
         const zoomSlider = document.getElementById('zoomSlider');
         if (zoomSlider) zoomSlider.value = Math.round(this.zoom * 100).toString();
         // With absolute positioning, SVG coordinates are fixed — no redraw needed

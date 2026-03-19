@@ -17,7 +17,7 @@ const TreeRenderer = {
     SPOUSE_GAP: 24,     // horizontal gap for spouse connector
     SIBLING_GAP: 30,    // gap between sibling couple-units
     ROW_GAP: 60,        // vertical gap between generation rows
-    PADDING: 40,        // container padding
+    PADDING: 160,       // container padding (extra gutter so zoom/pan can still see full left edge)
 
     render(members, containerId) {
         this.members = members;
@@ -243,8 +243,8 @@ const TreeRenderer = {
         const childTopY = node.children[0].y;
         const midY = parentBottomY + (childTopY - parentBottomY) / 2;
 
-        // 1. Vertical from parent bottom to midY
-        this.addLine(svg, parentCX, parentBottomY - this.CARD_H / 2, parentCX, midY);
+        // 1. Vertical from parent bottom-center to midY
+        this.addLine(svg, parentCX, parentBottomY, parentCX, midY);
 
         if (node.children.length === 1) {
             const child = node.children[0];
