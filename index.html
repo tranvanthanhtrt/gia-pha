@@ -24,6 +24,10 @@
             <button class="btn btn-icon" id="btnZoomOut" title="Thu nhỏ"><i class="fas fa-search-minus"></i></button>
             <button class="btn btn-icon" id="btnFitView" title="Vừa màn hình"><i class="fas fa-expand"></i></button>
             <div class="divider-v"></div>
+            <div class="search-box">
+                <input type="text" id="memberSearch" placeholder="Tìm thành viên..." autocomplete="off">
+                <button class="btn btn-icon" id="btnSearchMember" title="Tìm"><i class="fas fa-search"></i></button>
+            </div>
             <button class="btn btn-primary" id="btnAddMember"><i class="fas fa-plus"></i> Thêm</button>
             <button class="btn btn-icon" id="btnSettings" title="Cài đặt"><i class="fas fa-cog"></i></button>
         </div>
@@ -169,6 +173,7 @@
                         <div class="btn-group">
                             <button class="btn btn-secondary" id="btnExportData"><i class="fas fa-download"></i> Xuất JSON</button>
                             <button class="btn btn-secondary" id="btnImportData"><i class="fas fa-upload"></i> Nhập JSON</button>
+                            <button class="btn btn-secondary" id="btnBackupNow"><i class="fas fa-shield-alt"></i> Backup ngay</button>
                             <input type="file" id="importFile" accept=".json" style="display:none">
                         </div>
                     </div>

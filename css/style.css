@@ -62,6 +62,24 @@ body {
     border: 1px solid rgba(200,168,78,0.3);
 }
 .header-right { display: flex; align-items: center; gap: 6px; }
+.search-box {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(200,168,78,0.35);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.search-box input {
+    width: 180px;
+    padding: 7px 10px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-size: 13px;
+}
+.search-box input::placeholder { color: rgba(255,255,255,0.65); }
 .divider-v { width: 1px; height: 22px; background: rgba(255,255,255,0.2); margin: 0 4px; }
 
 /* ===== BUTTONS ===== */
@@ -204,6 +222,16 @@ body {
     transform: translateY(-3px) scale(1.02);
     box-shadow: var(--shadow-lg);
     border-color: var(--gold);
+}
+.member-card.focused {
+    border-color: #2ecc71 !important;
+    box-shadow: 0 0 0 3px rgba(46,204,113,0.35), var(--shadow-lg);
+    animation: pulseFocus 1s ease-in-out 2;
+}
+@keyframes pulseFocus {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 .member-card.male { border-color: var(--male-border); }
 .member-card.male::before { border-color: rgba(26,82,118,0.3); }
@@ -486,7 +514,8 @@ hr { border: none; border-top: 1px solid rgba(200,168,78,0.3); margin: 16px 0; }
     .header-center { display: none; }
     .header-right #btnZoomIn,
     .header-right #btnZoomOut,
-    .header-right #btnFitView { display: none; }
+    .header-right #btnFitView,
+    .header-right .search-box { display: none; }
     .header-right .btn:not(.btn-icon):not(.btn-primary) { display: none; }
     .stats-bar { font-size: 12px; gap: 14px; padding: 6px 14px; }
     .detail-panel { width: 100%; right: -100%; }

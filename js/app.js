@@ -16,6 +16,7 @@ const App = {
         this.loadSettings();
         this.setZoom(this.zoom);
         this.updateAdminUI();
+        await this.ensureDailyBackup();
     },
 
     async loadData() {
@@ -160,7 +161,14 @@ const App = {
         };
         document.getElementById('btnExportData').onclick = () => this.exportData();
         document.getElementById('btnImportData').onclick = () => document.getElementById('importFile').click();
+        document.getElementById('btnBackupNow').onclick = () => this.createBackup(true);
         document.getElementById('importFile').onchange = (e) => this.importData(e);
+
+        // Search member
+        document.getElementById('btnSearchMember').onclick = () => this.searchAndFocusMember();
+        document.getElementById('memberSearch').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.searchAndFocusMember();
+        });
 
         document.getElementById('settingDataMode').onchange = (e) => {
             document.getElementById('supabaseSettings').style.display =
@@ -364,6 +372,7 @@ const App = {
 
         this.closeModal();
         await this.loadData();
+        await this.createBackup(false);
         this.toast(id ? 'Đã cập nhật thành công!' : 'Đã thêm thành viên mới!', 'success');
     },
 
@@ -387,6 +396,7 @@ const App = {
         await DataStore.deleteMember(id);
         this.closeModal();
         await this.loadData();
+        await this.createBackup(false);
         this.toast('Đã xóa thành viên', 'success');
     },
 
@@ -457,12 +467,91 @@ const App = {
         if (ok) {
             this.closeSettings();
             await this.loadData();
+            await this.createBackup(false);
             this.loadSettings();
             this.toast('Đã nhập dữ liệu thành công!', 'success');
         } else {
             this.toast('File không hợp lệ!', 'error');
         }
         e.target.value = '';
+    },
+
+    // ===== SEARCH + FOCUS =====
+    searchAndFocusMember() {
+        const keyword = (document.getElementById('memberSearch').value || '').trim().toLowerCase();
+        if (!keyword) {
+            this.toast('Nhập tên để tìm', 'error');
+            return;
+        }
+
+        const found = this.members.find(m => (m.name || '').toLowerCase().includes(keyword));
+        if (!found) {
+            this.toast('Không tìm thấy thành viên phù hợp', 'error');
+            return;
+        }
+
+        this.focusMemberCard(found.id);
+        this.showMemberDetail(found.id);
+    },
+
+    focusMemberCard(memberId) {
+        const wrapper = document.getElementById('treeWrapper');
+        const card = document.querySelector(`.member-card[data-id="${memberId}"]`);
+        if (!card || !wrapper) return;
+
+        document.querySelectorAll('.member-card.focused').forEach(el => el.classList.remove('focused'));
+
+        const z = this.zoom || 1;
+        const targetLeft = card.offsetLeft * z - (wrapper.clientWidth / 2) + (card.offsetWidth * z / 2);
+        const targetTop = card.offsetTop * z - (wrapper.clientHeight / 2) + (card.offsetHeight * z / 2);
+
+        wrapper.scrollTo({
+            left: Math.max(0, targetLeft),
+            top: Math.max(0, targetTop),
+            behavior: 'smooth'
+        });
+
+        setTimeout(() => card.classList.add('focused'), 180);
+        setTimeout(() => card.classList.remove('focused'), 3200);
+    },
+
+    // ===== BACKUP =====
+    async ensureDailyBackup() {
+        const today = new Date().toISOString().slice(0, 10);
+        const lastBackupDate = localStorage.getItem('giapha_last_backup_date');
+        if (lastBackupDate !== today) {
+            await this.createBackup(false);
+            localStorage.setItem('giapha_last_backup_date', today);
+        }
+    },
+
+    async createBackup(manual = false) {
+        try {
+            const json = await DataStore.exportData();
+            const backupsRaw = localStorage.getItem('giapha_backups');
+            const backups = backupsRaw ? JSON.parse(backupsRaw) : [];
+            const now = new Date();
+            backups.unshift({
+                ts: now.toISOString(),
+                size: json.length,
+                data: json
+            });
+            localStorage.setItem('giapha_backups', JSON.stringify(backups.slice(0, 15)));
+
+            if (manual) {
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `gia-pha-backup-${now.toISOString().replace(/[:.]/g, '-').slice(0, 19)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                this.toast('Đã backup + tải file JSON', 'success');
+            }
+        } catch (err) {
+            console.error('Backup failed', err);
+            if (manual) this.toast('Backup thất bại', 'error');
+        }
     },
 
     // ===== UTILS =====
