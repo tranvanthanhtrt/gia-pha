@@ -233,10 +233,16 @@ body {
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
-.member-card.male { border-color: var(--male-border); }
-.member-card.male::before { border-color: rgba(26,82,118,0.3); }
-.member-card.female { border-color: var(--female-border); }
-.member-card.female::before { border-color: rgba(146,43,33,0.3); }
+.member-card.male {
+    border-color: #1e6fa1;
+    background: linear-gradient(180deg, #f4fbff 0%, #e8f6ff 100%);
+}
+.member-card.male::before { border-color: rgba(30,111,161,0.45); }
+.member-card.female {
+    border-color: #b03a70;
+    background: linear-gradient(180deg, #fff5fa 0%, #ffe9f3 100%);
+}
+.member-card.female::before { border-color: rgba(176,58,112,0.45); }
 
 /* Deceased */
 .member-card.deceased { opacity: 0.7; }
@@ -263,7 +269,25 @@ body {
     width: 100%; height: 100%; object-fit: cover;
 }
 .member-avatar .avatar-icon {
-    font-size: 36px; color: var(--text-muted); opacity: 0.4;
+    font-size: 36px; color: var(--text-muted); opacity: 0.55;
+}
+.member-card.male .member-avatar {
+    background: #dff1ff;
+    border-color: rgba(30,111,161,0.45);
+}
+.member-card.male .member-name { color: #114b70; }
+.member-card.male .member-gen span {
+    color: #0f4a6c;
+    background: rgba(30,111,161,0.16);
+}
+.member-card.female .member-avatar {
+    background: #ffe0ef;
+    border-color: rgba(176,58,112,0.45);
+}
+.member-card.female .member-name { color: #7a244b; }
+.member-card.female .member-gen span {
+    color: #7a244b;
+    background: rgba(176,58,112,0.16);
 }
 
 /* Card info area */
