@@ -11,7 +11,7 @@ const TreeRenderer = {
     container: null,
     svgNS: 'http://www.w3.org/2000/svg',
 
-    // Layout constants (match CSS)
+    // Layout constants (fallback defaults; will sync from CSS at render time)
     CARD_W: 120,
     CARD_H: 190,
     SPOUSE_GAP: 24,     // horizontal gap for spouse connector
@@ -19,10 +19,44 @@ const TreeRenderer = {
     ROW_GAP: 60,        // vertical gap between generation rows
     PADDING: 160,       // container padding (extra gutter so zoom/pan can still see full left edge)
 
+    syncLayoutFromCSS() {
+        const probeHost = document.body || document.documentElement;
+        if (!probeHost) return;
+
+        const cardProbe = document.createElement('div');
+        cardProbe.className = 'member-card';
+        cardProbe.style.position = 'absolute';
+        cardProbe.style.visibility = 'hidden';
+        cardProbe.style.pointerEvents = 'none';
+        cardProbe.style.left = '-9999px';
+        cardProbe.style.top = '-9999px';
+        probeHost.appendChild(cardProbe);
+
+        const spouseProbe = document.createElement('div');
+        spouseProbe.className = 'spouse-connector';
+        spouseProbe.style.position = 'absolute';
+        spouseProbe.style.visibility = 'hidden';
+        spouseProbe.style.pointerEvents = 'none';
+        spouseProbe.style.left = '-9999px';
+        spouseProbe.style.top = '-9999px';
+        probeHost.appendChild(spouseProbe);
+
+        const cardRect = cardProbe.getBoundingClientRect();
+        const spouseRect = spouseProbe.getBoundingClientRect();
+
+        if (cardRect.width > 0) this.CARD_W = Math.round(cardRect.width);
+        if (cardRect.height > 0) this.CARD_H = Math.round(cardRect.height);
+        if (spouseRect.width >= 0) this.SPOUSE_GAP = Math.round(spouseRect.width);
+
+        cardProbe.remove();
+        spouseProbe.remove();
+    },
+
     render(members, containerId) {
         this.members = members;
         this.container = document.getElementById(containerId);
         this.container.innerHTML = '';
+        this.syncLayoutFromCSS();
 
         if (!members.length) {
             this.container.innerHTML = `
