@@ -6,6 +6,8 @@ const App = {
     startX: 0, startY: 0,
     scrollLeft: 0, scrollTop: 0,
     isAdmin: false,
+    lastPointerX: null,
+    lastPointerY: null,
 
     async init() {
         DataStore.init();
@@ -93,6 +95,10 @@ const App = {
             this.scrollTop = wrapper.scrollTop;
         });
         wrapper.addEventListener('mousemove', (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            this.lastPointerX = e.clientX - rect.left;
+            this.lastPointerY = e.clientY - rect.top;
+
             if (!this.isPanning) return;
             e.preventDefault();
             const x = e.pageX - wrapper.offsetLeft;
@@ -107,7 +113,10 @@ const App = {
         wrapper.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
                 e.preventDefault();
-                this.setZoom(this.zoom + (e.deltaY > 0 ? -0.1 : 0.1));
+                const rect = wrapper.getBoundingClientRect();
+                const anchorX = e.clientX - rect.left;
+                const anchorY = e.clientY - rect.top;
+                this.setZoom(this.zoom + (e.deltaY > 0 ? -0.1 : 0.1), anchorX, anchorY);
             }
         }, { passive: false });
 
@@ -178,23 +187,35 @@ const App = {
         };
     },
 
-    setZoom(val) {
+    setZoom(val, anchorX = null, anchorY = null) {
         const wrapper = document.getElementById('treeWrapper');
         const tree = document.getElementById('treeContainer');
         const prevZoom = this.zoom;
         const nextZoom = Math.max(0.3, Math.min(2, val));
 
-        // Keep viewport center stable while zooming
-        const centerX = wrapper.scrollLeft + wrapper.clientWidth / 2;
-        const centerY = wrapper.scrollTop + wrapper.clientHeight / 2;
-        const worldX = centerX / prevZoom;
-        const worldY = centerY / prevZoom;
+        const usePointerAnchor = this.isDesktopView()
+            && Number.isFinite(anchorX)
+            && Number.isFinite(anchorY);
+
+        const fallbackAnchorX = Number.isFinite(this.lastPointerX)
+            ? this.lastPointerX
+            : wrapper.clientWidth / 2;
+        const fallbackAnchorY = Number.isFinite(this.lastPointerY)
+            ? this.lastPointerY
+            : wrapper.clientHeight / 2;
+
+        const ax = usePointerAnchor ? anchorX : fallbackAnchorX;
+        const ay = usePointerAnchor ? anchorY : fallbackAnchorY;
+
+        // Keep anchor point stable while zooming (desktop: pointer, mobile: center/last touch)
+        const worldX = (wrapper.scrollLeft + ax) / prevZoom;
+        const worldY = (wrapper.scrollTop + ay) / prevZoom;
 
         this.zoom = nextZoom;
         tree.style.transform = `scale(${this.zoom})`;
 
-        wrapper.scrollLeft = Math.max(0, worldX * this.zoom - wrapper.clientWidth / 2);
-        wrapper.scrollTop = Math.max(0, worldY * this.zoom - wrapper.clientHeight / 2);
+        wrapper.scrollLeft = Math.max(0, worldX * this.zoom - ax);
+        wrapper.scrollTop = Math.max(0, worldY * this.zoom - ay);
 
         const zoomSlider = document.getElementById('zoomSlider');
         if (zoomSlider) zoomSlider.value = Math.round(this.zoom * 100).toString();
@@ -204,7 +225,25 @@ const App = {
     resetZoomView() {
         this.setZoom(0.5);
         const wrapper = document.getElementById('treeWrapper');
+        const tree = document.getElementById('treeContainer');
+
+        if (this.isDesktopView()) {
+            const contentW = tree.scrollWidth * this.zoom;
+            const contentH = tree.scrollHeight * this.zoom;
+            wrapper.scrollTo({
+                left: Math.max(0, (contentW - wrapper.clientWidth) / 2),
+                top: Math.max(0, (contentH - wrapper.clientHeight) / 2),
+                behavior: 'smooth'
+            });
+            return;
+        }
+
+        // Keep mobile behavior as-is
         wrapper.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    },
+
+    isDesktopView() {
+        return window.matchMedia('(min-width: 769px)').matches;
     },
 
     // ===== MEMBER DETAIL PANEL =====
