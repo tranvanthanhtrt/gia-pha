@@ -135,6 +135,8 @@ const App = {
         };
         document.getElementById('btnSaveMember').onclick = () => this.saveMember();
         document.getElementById('btnDeleteMember').onclick = () => this.deleteMember();
+        document.getElementById('memberParent').addEventListener('change', () => this.autoFillGenerationFromParent());
+        document.getElementById('memberSiblingRef').addEventListener('change', () => this.autoFillGenerationFromSibling());
 
         // Panel
         document.getElementById('btnClosePanel').onclick = () => this.closePanel();
@@ -281,6 +283,8 @@ const App = {
         document.getElementById('btnDeleteMember').style.display = 'none';
         this.populateParentSelect();
         this.populateSpouseSelect();
+        this.populateSiblingRefSelect();
+        document.getElementById('memberSiblingRef').value = '';
         document.getElementById('modalOverlay').classList.add('active');
     },
 
@@ -305,9 +309,11 @@ const App = {
 
         this.populateParentSelect(m.id);
         this.populateSpouseSelect(m.id);
+        this.populateSiblingRefSelect(m.id);
 
         document.getElementById('memberParent').value = m.parent_id || '';
         document.getElementById('memberSpouse').value = m.spouse_id || '';
+        document.getElementById('memberSiblingRef').value = '';
         document.getElementById('btnDeleteMember').style.display = 'inline-flex';
 
         document.getElementById('modalOverlay').classList.add('active');
@@ -337,6 +343,41 @@ const App = {
                 select.innerHTML += `<option value="${m.id}">${m.name}</option>`;
             }
         });
+    },
+
+    populateSiblingRefSelect(excludeId) {
+        const select = document.getElementById('memberSiblingRef');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Không chọn --</option>';
+        this.members.forEach(m => {
+            if (m.id === excludeId) return;
+            select.innerHTML += `<option value="${m.id}">${m.name} (Đời ${m.generation || '?'})</option>`;
+        });
+    },
+
+    autoFillGenerationFromParent() {
+        const parentId = document.getElementById('memberParent').value;
+        if (!parentId) return;
+        const parent = this.members.find(m => m.id === parentId);
+        if (!parent) return;
+        const nextGen = (parseInt(parent.generation, 10) || 1) + 1;
+        document.getElementById('memberGeneration').value = nextGen;
+    },
+
+    autoFillGenerationFromSibling() {
+        const siblingId = document.getElementById('memberSiblingRef').value;
+        if (!siblingId) return;
+        const sibling = this.members.find(m => m.id === siblingId);
+        if (!sibling) return;
+
+        // Sibling => same generation
+        document.getElementById('memberGeneration').value = sibling.generation || 1;
+
+        // If parent not chosen yet, inherit sibling parent
+        const parentEl = document.getElementById('memberParent');
+        if (!parentEl.value && sibling.parent_id) {
+            parentEl.value = sibling.parent_id;
+        }
     },
 
     async saveMember() {

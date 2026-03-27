@@ -244,16 +244,22 @@ body {
 }
 .member-card.female::before { border-color: rgba(176,58,112,0.45); }
 
-/* Deceased */
-.member-card.deceased { opacity: 0.7; }
-.member-card.deceased:hover { opacity: 0.9; }
-.deceased-badge {
-    position: absolute; top: 8px; right: 8px;
-    font-size: 9px; color: var(--red-dark);
-    background: rgba(192,57,43,0.1);
-    padding: 1px 5px; border-radius: 3px;
-    font-weight: 700; z-index: 2;
+/* Alive/Deceased status */
+.member-card.deceased { opacity: 0.78; }
+.member-card.deceased:hover { opacity: 0.92; }
+.status-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.18);
+    z-index: 2;
 }
+.status-dot.alive { background: #2ecc71; }
+.status-dot.deceased { background: #7f8c8d; }
 
 /* Avatar - Photo frame */
 .member-avatar {

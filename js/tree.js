@@ -245,7 +245,7 @@ const TreeRenderer = {
         const deathStr = member.death_date ? 'MT: ' + new Date(member.death_date).toLocaleDateString('vi-VN') : 'MT: —';
 
         card.innerHTML = `
-            ${member.death_date ? '<span class="deceased-badge">✝</span>' : ''}
+            <span class="status-dot ${member.death_date ? 'deceased' : 'alive'}" title="${member.death_date ? 'Đã mất' : 'Còn sống'}"></span>
             <div class="member-avatar">${avatarContent}</div>
             <div class="card-info">
                 <div class="member-gen"><span>ĐỜI ${member.generation || '?'}</span></div>
