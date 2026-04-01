@@ -159,7 +159,10 @@ const App = {
         };
         document.getElementById('btnSaveSettings').onclick = () => this.saveSettings();
         const demoBtn = document.getElementById('btnLoadDemo');
-        if (demoBtn) demoBtn.style.display = 'none';
+        if (demoBtn) {
+            demoBtn.style.display = 'inline-flex';
+            demoBtn.onclick = () => this.loadDemo();
+        }
         document.getElementById('settingSupabaseUrl').oninput = (e) => {
             if (document.getElementById('settingDataMode').value === 'supabase') {
                 DataStore.supabaseUrl = e.target.value;
@@ -325,6 +328,7 @@ const App = {
         this.populateSiblingRefSelect();
         document.getElementById('memberSiblingRef').value = '';
         document.getElementById('modalOverlay').classList.add('active');
+        this.setMemberFormOpen(true);
     },
 
     openEditModal(id) {
@@ -356,10 +360,16 @@ const App = {
         document.getElementById('btnDeleteMember').style.display = 'inline-flex';
 
         document.getElementById('modalOverlay').classList.add('active');
+        this.setMemberFormOpen(true);
     },
 
     closeModal() {
         document.getElementById('modalOverlay').classList.remove('active');
+        this.setMemberFormOpen(false);
+    },
+
+    setMemberFormOpen(open) {
+        document.body.classList.toggle('member-form-open', !!open);
     },
 
     populateParentSelect(excludeId) {
@@ -516,7 +526,17 @@ const App = {
     },
 
     async loadDemo() {
-        this.toast('Đã tắt chức năng tải dữ liệu mẫu', 'error');
+        if (!this.isAdmin) {
+            this.toast('Chỉ admin mới được tải dữ liệu mẫu', 'error');
+            return;
+        }
+        if (!confirm('Tạo lại toàn bộ dữ liệu mẫu 6 đời (~70 thành viên)? Dữ liệu hiện tại sẽ bị ghi đè.')) return;
+
+        await DataStore.loadDemoData();
+        await this.loadData();
+        await this.createBackup(false);
+        this.closeSettings();
+        this.toast('Đã tạo lại dữ liệu mẫu 6 đời (~70 thành viên)', 'success');
     },
 
     async exportData() {

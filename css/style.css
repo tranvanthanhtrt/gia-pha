@@ -275,7 +275,16 @@ body {
     width: 100%; height: 100%; object-fit: cover;
 }
 .member-avatar .avatar-icon {
-    font-size: 36px; color: var(--text-muted); opacity: 0.55;
+    font-size: 36px;
+    transition: color 0.2s ease, opacity 0.2s ease;
+}
+.member-avatar .avatar-icon.alive {
+    color: #6f5533;
+    opacity: 0.9;
+}
+.member-avatar .avatar-icon.deceased {
+    color: #ad9a7e;
+    opacity: 0.55;
 }
 .member-card.male .member-avatar {
     background: #dff1ff;
@@ -594,23 +603,27 @@ hr { border: none; border-top: 1px solid rgba(200,168,78,0.3); margin: 16px 0; }
     .zoom-slider-wrap {
         position: fixed;
         right: 12px;
-        bottom: 74px;
+        bottom: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 170px;
+        width: 160px;
+        height: 44px;
         z-index: 999;
         background: rgba(58, 42, 10, 0.9);
         border: 1px solid var(--gold);
-        border-radius: 22px;
+        border-radius: 999px;
         backdrop-filter: blur(4px);
+        padding: 0 12px;
     }
 
     #zoomSlider {
-        -webkit-appearance: slider-vertical;
-        appearance: slider-vertical;
-        width: 28px;
-        height: 138px;
+        width: 100%;
+        height: 24px;
+    }
+
+    body.member-form-open .mobile-zoom-controls,
+    body.member-form-open .zoom-slider-wrap {
+        display: none !important;
     }
 }

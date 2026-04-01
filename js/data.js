@@ -160,56 +160,102 @@ const DataStore = {
     // RULE: spouse_id is ONE-WAY. Only the blood-line member sets spouse_id.
     //       The married-in spouse has spouse_id: null, parent_id: null.
     async loadDemoData() {
-        return; // disabled demo seed
-        const demo = [
-            // ══════ ĐỜI 1 — Ông Bà Thủy Tổ ══════
-            { id: '1',  name: 'Chu Văn Long',     gender: 'male',   birth_date: '1935-02-10', death_date: '2005-08-15', parent_id: null, spouse_id: '2',  generation: 1, bio: 'Ông Thủy Tổ dòng họ Chu. Thầy đồ Nho học.', photo_url: '' },
-            { id: '2',  name: 'Trần Thị Mai',     gender: 'female', birth_date: '1938-06-20', death_date: '2012-11-03', parent_id: null, spouse_id: null, generation: 1, bio: 'Bà Thủy Tổ. Nữ hộ sinh.', photo_url: '' },
+        const maleNames = ['Văn An', 'Văn Bình', 'Văn Cường', 'Văn Dũng', 'Văn Đức', 'Văn Hòa', 'Văn Khoa', 'Văn Lâm', 'Văn Minh', 'Văn Nam', 'Văn Phong', 'Văn Quang', 'Văn Sơn', 'Văn Thái', 'Văn Trung'];
+        const femaleNames = ['Thị Anh', 'Thị Bình', 'Thị Chi', 'Thị Dung', 'Thị Giang', 'Thị Hạnh', 'Thị Hoa', 'Thị Hồng', 'Thị Lan', 'Thị Mai', 'Thị Ngọc', 'Thị Oanh', 'Thị Phương', 'Thị Thu', 'Thị Yến'];
 
-            // ══════ ĐỜI 2 — Con (4 người) ══════
-            { id: '3',  name: 'Chu Văn Lâm',      gender: 'male',   birth_date: '1960-01-15', death_date: null, parent_id: '1', spouse_id: '4',  generation: 2, bio: 'Con trưởng. Giáo viên cấp 3.', photo_url: '' },
-            { id: '4',  name: 'Nguyễn Thị Hằng',  gender: 'female', birth_date: '1962-04-22', death_date: null, parent_id: null, spouse_id: null, generation: 2, bio: 'Vợ anh Lâm. Kế toán trưởng.', photo_url: '' },
+        const demo = [];
+        let idCounter = 1;
 
-            { id: '5',  name: 'Chu Thị Thảo',     gender: 'female', birth_date: '1963-09-08', death_date: null, parent_id: '1', spouse_id: '6',  generation: 2, bio: 'Con gái thứ hai. Bác sĩ đa khoa.', photo_url: '' },
-            { id: '6',  name: 'Lê Văn Sơn',       gender: 'male',   birth_date: '1961-12-05', death_date: null, parent_id: null, spouse_id: null, generation: 2, bio: 'Chồng chị Thảo. Kiến trúc sư.', photo_url: '' },
+        const makeDate = (year, index) => {
+            const month = ((index % 12) + 1).toString().padStart(2, '0');
+            const day = (((index * 3) % 27) + 1).toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
 
-            { id: '7',  name: 'Chu Văn Minh',     gender: 'male',   birth_date: '1967-05-30', death_date: null, parent_id: '1', spouse_id: '8',  generation: 2, bio: 'Con trai thứ ba. Doanh nhân.', photo_url: '' },
-            { id: '8',  name: 'Phạm Thị Hoa',     gender: 'female', birth_date: '1970-03-18', death_date: null, parent_id: null, spouse_id: null, generation: 2, bio: 'Vợ anh Minh. Dược sĩ.', photo_url: '' },
+        const createPerson = ({ name, gender, generation, parentId = null, spouseId = null, birthYear = 1980, deceased = false }) => {
+            const id = String(idCounter++);
+            const birth_date = makeDate(birthYear, idCounter);
+            const death_date = deceased ? makeDate(birthYear + 68, idCounter + 2) : null;
+            demo.push({
+                id,
+                name,
+                gender,
+                birth_date,
+                death_date,
+                parent_id: parentId,
+                spouse_id: spouseId,
+                generation,
+                bio: `Thành viên đời ${generation}`,
+                photo_url: ''
+            });
+            return id;
+        };
 
-            { id: '9',  name: 'Chu Thị Hương',    gender: 'female', birth_date: '1972-11-12', death_date: null, parent_id: '1', spouse_id: '10', generation: 2, bio: 'Con gái út. Nhà báo.', photo_url: '' },
-            { id: '10', name: 'Võ Văn Tâm',       gender: 'male',   birth_date: '1970-07-25', death_date: null, parent_id: null, spouse_id: null, generation: 2, bio: 'Chồng chị Hương. Luật sư.', photo_url: '' },
+        // Đời 1: 1 cặp vợ chồng
+        const rootMaleId = createPerson({ name: 'Trần Văn Tổ', gender: 'male', generation: 1, birthYear: 1928, deceased: true });
+        const rootFemaleId = createPerson({ name: 'Lê Thị Tổ', gender: 'female', generation: 1, birthYear: 1932, deceased: true });
+        demo.find(m => m.id === rootMaleId).spouse_id = rootFemaleId;
 
-            // ══════ ĐỜI 3 — Cháu ══════
-            // --- Con của Lâm & Hằng (3 con) ---
-            { id: '11', name: 'Chu Minh Tuấn',    gender: 'male',   birth_date: '1988-03-12', death_date: null, parent_id: '3', spouse_id: '12', generation: 3, bio: 'Kỹ sư phần mềm.', photo_url: '' },
-            { id: '12', name: 'Hoàng Thị Nga',    gender: 'female', birth_date: '1990-08-01', death_date: null, parent_id: null, spouse_id: null, generation: 3, bio: 'Vợ Tuấn. Nhân viên ngân hàng.', photo_url: '' },
-            { id: '13', name: 'Chu Thị Hạnh',     gender: 'female', birth_date: '1991-06-22', death_date: null, parent_id: '3', spouse_id: null, generation: 3, bio: 'Bác sĩ nha khoa.', photo_url: '' },
-            { id: '14', name: 'Chu Văn Đạt',      gender: 'male',   birth_date: '1995-10-05', death_date: null, parent_id: '3', spouse_id: null, generation: 3, bio: 'Sinh viên du học Nhật Bản.', photo_url: '' },
+        let bloodline = [rootMaleId];
+        const childrenPlan = [4, 8, 12, 14, 16]; // tổng 54 người huyết thống (đời 1→6)
 
-            // --- Con của Thảo & Sơn (2 con) ---
-            { id: '15', name: 'Lê Thị Ngọc',      gender: 'female', birth_date: '1990-01-15', death_date: null, parent_id: '5', spouse_id: '16', generation: 3, bio: 'Giảng viên đại học.', photo_url: '' },
-            { id: '16', name: 'Trịnh Văn Khôi',   gender: 'male',   birth_date: '1988-05-20', death_date: null, parent_id: null, spouse_id: null, generation: 3, bio: 'Chồng Ngọc. Phi công.', photo_url: '' },
-            { id: '17', name: 'Lê Văn Khoa',      gender: 'male',   birth_date: '1993-07-18', death_date: null, parent_id: '5', spouse_id: null, generation: 3, bio: 'Lập trình viên AI.', photo_url: '' },
+        for (let gen = 2; gen <= 6; gen++) {
+            const targetChildren = childrenPlan[gen - 2];
+            const nextBloodline = [];
+            let idx = 0;
 
-            // --- Con của Minh & Hoa (2 con) ---
-            { id: '18', name: 'Chu Văn Phong',    gender: 'male',   birth_date: '1996-09-10', death_date: null, parent_id: '7', spouse_id: '19', generation: 3, bio: 'Marketing Manager.', photo_url: '' },
-            { id: '19', name: 'Đỗ Thị Thúy',      gender: 'female', birth_date: '1998-12-28', death_date: null, parent_id: null, spouse_id: null, generation: 3, bio: 'Vợ Phong. Designer.', photo_url: '' },
-            { id: '20', name: 'Chu Thị Uyên',     gender: 'female', birth_date: '2000-03-14', death_date: null, parent_id: '7', spouse_id: null, generation: 3, bio: 'Sinh viên Y khoa.', photo_url: '' },
+            for (let i = 0; i < targetChildren; i++) {
+                const parentId = bloodline[idx % bloodline.length];
+                idx++;
+                const isMale = i % 2 === 0;
+                const firstName = isMale
+                    ? maleNames[(i + gen) % maleNames.length]
+                    : femaleNames[(i + gen) % femaleNames.length];
 
-            // --- Con của Hương & Tâm (1 con) ---
-            { id: '21', name: 'Võ Minh Hoàng',    gender: 'male',   birth_date: '1998-02-08', death_date: null, parent_id: '9', spouse_id: null, generation: 3, bio: 'Nhiếp ảnh gia.', photo_url: '' },
+                const memberId = createPerson({
+                    name: `Trần ${firstName} ${gen}${(i + 1).toString().padStart(2, '0')}`,
+                    gender: isMale ? 'male' : 'female',
+                    generation: gen,
+                    parentId,
+                    birthYear: 1928 + (gen - 1) * 24 + i,
+                    deceased: gen <= 3 && i % 4 === 0
+                });
 
-            // ══════ ĐỜI 4 — Chắt ══════
-            // --- Con của Tuấn & Nga ---
-            { id: '22', name: 'Chu Gia Bảo',      gender: 'male',   birth_date: '2016-04-15', death_date: null, parent_id: '11', spouse_id: null, generation: 4, bio: 'Học sinh tiểu học.', photo_url: '' },
-            { id: '23', name: 'Chu Ngọc Anh',     gender: 'female', birth_date: '2019-07-20', death_date: null, parent_id: '11', spouse_id: null, generation: 4, bio: 'Mầm non.', photo_url: '' },
+                nextBloodline.push(memberId);
 
-            // --- Con của Ngọc & Khôi ---
-            { id: '24', name: 'Trịnh Minh Châu',  gender: 'female', birth_date: '2018-11-02', death_date: null, parent_id: '15', spouse_id: null, generation: 4, bio: 'Học sinh.', photo_url: '' },
+                // khoảng 30% thành viên có vợ/chồng ngoài họ (không parent)
+                if ((i + gen) % 3 === 0) {
+                    const spouseIsFemale = isMale;
+                    const spouseName = spouseIsFemale
+                        ? `Nguyễn ${femaleNames[(i + gen + 2) % femaleNames.length]} ${gen}${(i + 1).toString().padStart(2, '0')}`
+                        : `Phạm ${maleNames[(i + gen + 3) % maleNames.length]} ${gen}${(i + 1).toString().padStart(2, '0')}`;
 
-            // --- Con của Phong & Thúy ---
-            { id: '25', name: 'Chu Minh Khôi',    gender: 'male',   birth_date: '2023-01-08', death_date: null, parent_id: '18', spouse_id: null, generation: 4, bio: 'Em bé.', photo_url: '' },
-        ];
+                    const spouseId = createPerson({
+                        name: spouseName,
+                        gender: spouseIsFemale ? 'female' : 'male',
+                        generation: gen,
+                        parentId: null,
+                        birthYear: 1930 + (gen - 1) * 24 + i,
+                        deceased: gen <= 2 && i % 5 === 0
+                    });
+
+                    demo.find(m => m.id === memberId).spouse_id = spouseId;
+                }
+            }
+
+            bloodline = nextBloodline;
+        }
+
+        // Chốt đúng khoảng 70 thành viên
+        const targetSize = 70;
+        if (demo.length > targetSize) {
+            const keepIds = new Set(demo.slice(0, targetSize).map(m => m.id));
+            demo.length = targetSize;
+            demo.forEach(m => {
+                if (m.spouse_id && !keepIds.has(m.spouse_id)) m.spouse_id = null;
+                if (m.parent_id && !keepIds.has(m.parent_id)) m.parent_id = null;
+            });
+        }
 
         if (this.mode === 'supabase' && this.supabase) {
             await this.supabase.from('family_members').delete().neq('id', '');
@@ -217,6 +263,7 @@ const DataStore = {
             this.saveSettings({ familyName: 'Gia phả Họ Trần Văn', mode: 'supabase', supabaseUrl: this.supabaseUrl, supabaseKey: this.supabaseKey });
             return;
         }
+
         this._saveLocal(demo);
         this.saveSettings({ familyName: 'Gia phả Họ Trần Văn', mode: 'local' });
     },

@@ -237,9 +237,10 @@ const TreeRenderer = {
         card.dataset.id = member.id;
         card.onclick = (e) => { e.stopPropagation(); App.showMemberDetail(member.id); };
 
+        const avatarToneClass = member.death_date ? 'deceased' : 'alive';
         const avatarContent = member.photo_url
-            ? `<img src="${member.photo_url}" alt="${member.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user avatar-icon\\'></i>'">`
-            : `<i class="fas fa-user avatar-icon"></i>`;
+            ? `<img src="${member.photo_url}" alt="${member.name}" onerror="this.parentElement.innerHTML='<i class=\\'fas fa-user avatar-icon ${avatarToneClass}\\'></i>'">`
+            : `<i class="fas fa-user avatar-icon ${avatarToneClass}"></i>`;
 
         const birthStr = member.birth_date ? 'NS: ' + new Date(member.birth_date).toLocaleDateString('vi-VN') : 'NS: —';
         const deathStr = member.death_date ? 'MT: ' + new Date(member.death_date).toLocaleDateString('vi-VN') : 'MT: —';
