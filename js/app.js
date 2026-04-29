@@ -460,7 +460,10 @@ const App = {
         const isEdit = !!document.getElementById('memberId').value;
         let id = document.getElementById('memberId').value || null;
         if (!id) id = DataStore.generateId();
-        let photoUrl = document.getElementById('memberPhoto').value || '';
+        const existingMember = this.members.find(m => m.id === id);
+        let photoUrl = this.pendingAvatarBlob
+            ? (existingMember && existingMember.photo_url ? existingMember.photo_url : '')
+            : (document.getElementById('memberPhoto').value || '');
         let avatarPath = document.getElementById('memberAvatarPath').value || '';
 
         if (this.removeAvatarRequested && avatarPath) {
@@ -475,15 +478,13 @@ const App = {
                 if (uploaded && uploaded.url) {
                     photoUrl = uploaded.url;
                     avatarPath = uploaded.path;
-                } else {
+                } else if (DataStore.mode !== 'supabase') {
                     photoUrl = await this.blobToDataUrl(this.pendingAvatarBlob);
                     avatarPath = '';
                 }
             } catch (err) {
-                console.warn('Avatar upload failed, falling back to compressed data URL:', err);
-                photoUrl = await this.blobToDataUrl(this.pendingAvatarBlob);
-                avatarPath = '';
-                this.toast('Upload Supabase chưa sẵn sàng, ảnh tạm lưu dạng nén trong dữ liệu', 'error');
+                console.warn('Avatar upload failed:', err);
+                this.toast('Chưa upload được ảnh: cần tạo bucket Supabase tên avatars', 'error');
             }
         }
 
