@@ -515,6 +515,47 @@ body {
 }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+.avatar-upload-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.avatar-preview {
+    width: 86px;
+    height: 96px;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+}
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.avatar-preview i {
+    color: var(--text-muted);
+    font-size: 28px;
+    opacity: 0.55;
+}
+.avatar-upload-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.avatar-upload-actions small {
+    width: 100%;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
 /* ===== TOAST ===== */
 .toast-container {
     position: fixed; bottom: 20px; right: 20px;

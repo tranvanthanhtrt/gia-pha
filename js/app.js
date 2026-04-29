@@ -8,6 +8,9 @@ const App = {
     isAdmin: false,
     lastPointerX: null,
     lastPointerY: null,
+    pendingAvatarBlob: null,
+    pendingAvatarPreviewUrl: '',
+    removeAvatarRequested: false,
 
     async init() {
         DataStore.init();
@@ -146,6 +149,14 @@ const App = {
         document.getElementById('btnDeleteMember').onclick = () => this.deleteMember();
         document.getElementById('memberParent').addEventListener('change', () => this.autoFillGenerationFromParent());
         document.getElementById('memberSiblingRef').addEventListener('change', () => this.autoFillGenerationFromSibling());
+        document.getElementById('btnPickAvatar').onclick = () => document.getElementById('memberAvatarFile').click();
+        document.getElementById('memberAvatarFile').onchange = (e) => this.handleAvatarFile(e);
+        document.getElementById('btnRemoveAvatar').onclick = () => this.clearAvatarSelection(true);
+        document.getElementById('memberGender').addEventListener('change', () => {
+            if (!document.getElementById('memberPhoto').value && !this.pendingAvatarBlob) {
+                this.setAvatarPreview('', document.getElementById('memberGender').value);
+            }
+        });
 
         // Panel
         document.getElementById('btnClosePanel').onclick = () => this.closePanel();
@@ -323,6 +334,8 @@ const App = {
         document.getElementById('memberForm').reset();
         document.getElementById('memberId').value = '';
         document.getElementById('btnDeleteMember').style.display = 'none';
+        this.resetAvatarState();
+        this.setAvatarPreview('', document.getElementById('memberGender').value);
         this.populateParentSelect();
         this.populateSpouseSelect();
         this.populateSiblingRefSelect();
@@ -347,8 +360,11 @@ const App = {
         document.getElementById('memberBirth').value = m.birth_date || '';
         document.getElementById('memberDeath').value = m.death_date || '';
         document.getElementById('memberGeneration').value = m.generation || 1;
+        this.resetAvatarState();
         document.getElementById('memberPhoto').value = m.photo_url || '';
+        document.getElementById('memberAvatarPath').value = m.avatar_path || this.getAvatarPathFromUrl(m.photo_url || '');
         document.getElementById('memberBio').value = m.bio || '';
+        this.setAvatarPreview(m.photo_url || '', m.gender);
 
         this.populateParentSelect(m.id);
         this.populateSpouseSelect(m.id);
@@ -366,6 +382,7 @@ const App = {
     closeModal() {
         document.getElementById('modalOverlay').classList.remove('active');
         this.setMemberFormOpen(false);
+        this.clearPendingAvatarObjectUrl();
     },
 
     setMemberFormOpen(open) {
@@ -440,7 +457,36 @@ const App = {
             return;
         }
 
-        const id = document.getElementById('memberId').value || null;
+        const isEdit = !!document.getElementById('memberId').value;
+        let id = document.getElementById('memberId').value || null;
+        if (!id) id = DataStore.generateId();
+        let photoUrl = document.getElementById('memberPhoto').value || '';
+        let avatarPath = document.getElementById('memberAvatarPath').value || '';
+
+        if (this.removeAvatarRequested && avatarPath) {
+            await DataStore.deleteAvatar(avatarPath);
+            photoUrl = '';
+            avatarPath = '';
+        }
+
+        if (this.pendingAvatarBlob) {
+            try {
+                const uploaded = await DataStore.uploadAvatar(id, this.pendingAvatarBlob, avatarPath);
+                if (uploaded && uploaded.url) {
+                    photoUrl = uploaded.url;
+                    avatarPath = uploaded.path;
+                } else {
+                    photoUrl = await this.blobToDataUrl(this.pendingAvatarBlob);
+                    avatarPath = '';
+                }
+            } catch (err) {
+                console.warn('Avatar upload failed, falling back to compressed data URL:', err);
+                photoUrl = await this.blobToDataUrl(this.pendingAvatarBlob);
+                avatarPath = '';
+                this.toast('Upload Supabase chưa sẵn sàng, ảnh tạm lưu dạng nén trong dữ liệu', 'error');
+            }
+        }
+
         const member = {
             id,
             name,
@@ -450,7 +496,7 @@ const App = {
             parent_id: document.getElementById('memberParent').value || null,
             spouse_id: document.getElementById('memberSpouse').value || null,
             generation: parseInt(document.getElementById('memberGeneration').value) || 1,
-            photo_url: document.getElementById('memberPhoto').value || '',
+            photo_url: photoUrl,
             bio: document.getElementById('memberBio').value || '',
         };
 
@@ -463,7 +509,7 @@ const App = {
         this.closeModal();
         await this.loadData();
         await this.createBackup(false);
-        this.toast(id ? 'Đã cập nhật thành công!' : 'Đã thêm thành viên mới!', 'success');
+        this.toast(isEdit ? 'Đã cập nhật thành công!' : 'Đã thêm thành viên mới!', 'success');
     },
 
     async deleteMember() {
@@ -483,11 +529,116 @@ const App = {
             if (!confirm(`Xóa ${m.name}?`)) return;
         }
 
+        if (m) await DataStore.deleteAvatar(m.avatar_path || this.getAvatarPathFromUrl(m.photo_url || ''));
         await DataStore.deleteMember(id);
         this.closeModal();
         await this.loadData();
         await this.createBackup(false);
         this.toast('Đã xóa thành viên', 'success');
+    },
+
+    // ===== AVATAR UPLOAD =====
+    async handleAvatarFile(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            this.toast('File ảnh không hợp lệ', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            const blob = await this.compressAvatar(file, 512, 0.78);
+            this.clearPendingAvatarObjectUrl();
+            this.pendingAvatarBlob = blob;
+            this.pendingAvatarPreviewUrl = URL.createObjectURL(blob);
+            this.removeAvatarRequested = false;
+            document.getElementById('memberPhoto').value = this.pendingAvatarPreviewUrl;
+            this.setAvatarPreview(this.pendingAvatarPreviewUrl, document.getElementById('memberGender').value);
+            const kb = Math.max(1, Math.round(blob.size / 1024));
+            this.toast(`Đã nén ảnh còn khoảng ${kb}KB`, 'success');
+        } catch (err) {
+            console.error('Avatar compress failed:', err);
+            this.toast('Không xử lý được ảnh này', 'error');
+        } finally {
+            e.target.value = '';
+        }
+    },
+
+    compressAvatar(file, maxSize = 512, quality = 0.78) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const src = URL.createObjectURL(file);
+            img.onload = () => {
+                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                const width = Math.max(1, Math.round(img.width * scale));
+                const height = Math.max(1, Math.round(img.height * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                URL.revokeObjectURL(src);
+                const type = canvas.toBlob ? 'image/webp' : file.type;
+                canvas.toBlob(blob => {
+                    if (!blob) reject(new Error('Canvas export failed'));
+                    else resolve(blob);
+                }, type, quality);
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(src);
+                reject(new Error('Image load failed'));
+            };
+            img.src = src;
+        });
+    },
+
+    blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    },
+
+    setAvatarPreview(url, gender = 'male') {
+        const preview = document.getElementById('avatarPreview');
+        if (!preview) return;
+        if (url) {
+            preview.innerHTML = `<img src="${url}" alt="Avatar preview">`;
+            return;
+        }
+        preview.innerHTML = `<i class="fas fa-${gender === 'female' ? 'venus' : 'mars'}"></i>`;
+    },
+
+    clearAvatarSelection(markRemove = false) {
+        this.clearPendingAvatarObjectUrl();
+        this.pendingAvatarBlob = null;
+        this.removeAvatarRequested = !!markRemove;
+        document.getElementById('memberPhoto').value = '';
+        this.setAvatarPreview('', document.getElementById('memberGender').value);
+    },
+
+    resetAvatarState() {
+        this.clearPendingAvatarObjectUrl();
+        this.pendingAvatarBlob = null;
+        this.removeAvatarRequested = false;
+        document.getElementById('memberPhoto').value = '';
+        document.getElementById('memberAvatarPath').value = '';
+    },
+
+    clearPendingAvatarObjectUrl() {
+        if (this.pendingAvatarPreviewUrl) URL.revokeObjectURL(this.pendingAvatarPreviewUrl);
+        this.pendingAvatarPreviewUrl = '';
+    },
+
+    getAvatarPathFromUrl(url) {
+        if (!url || url.startsWith('data:')) return '';
+        const marker = '/storage/v1/object/public/avatars/';
+        const idx = url.indexOf(marker);
+        if (idx < 0) return '';
+        return decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
     },
 
     // ===== SETTINGS =====

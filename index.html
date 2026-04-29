@@ -124,8 +124,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Ảnh đại diện (URL)</label>
-                        <input type="url" id="memberPhoto" placeholder="https://example.com/photo.jpg">
+                        <label>Ảnh đại diện</label>
+                        <div class="avatar-upload-row">
+                            <div class="avatar-preview" id="avatarPreview">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="avatar-upload-actions">
+                                <input type="hidden" id="memberPhoto">
+                                <input type="hidden" id="memberAvatarPath">
+                                <input type="file" id="memberAvatarFile" accept="image/*" style="display:none">
+                                <button type="button" class="btn btn-secondary" id="btnPickAvatar"><i class="fas fa-image"></i> Chọn ảnh</button>
+                                <button type="button" class="btn btn-secondary" id="btnRemoveAvatar"><i class="fas fa-times"></i> Xóa ảnh</button>
+                                <small>Ảnh sẽ tự nén còn khoảng 512px để tiết kiệm dung lượng.</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">

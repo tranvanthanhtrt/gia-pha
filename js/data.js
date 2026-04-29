@@ -90,6 +90,40 @@ const DataStore = {
         return member;
     },
 
+    async uploadAvatar(memberId, blob, oldPath = '') {
+        if (!(this.mode === 'supabase' && this.supabase)) return null;
+        const ext = blob.type === 'image/png' ? 'png' : 'webp';
+        const path = `${memberId}/${Date.now()}.${ext}`;
+        const { error } = await this.supabase.storage
+            .from('avatars')
+            .upload(path, blob, {
+                contentType: blob.type || 'image/webp',
+                cacheControl: '31536000',
+                upsert: true
+            });
+
+        if (error) {
+            console.error('Supabase avatar upload error:', error);
+            throw error;
+        }
+
+        if (oldPath && oldPath !== path) {
+            this.supabase.storage.from('avatars').remove([oldPath]).catch(err => console.warn('Old avatar cleanup failed:', err));
+        }
+
+        const { data } = this.supabase.storage.from('avatars').getPublicUrl(path);
+        return {
+            path,
+            url: data && data.publicUrl ? data.publicUrl : ''
+        };
+    },
+
+    async deleteAvatar(path) {
+        if (!path || !(this.mode === 'supabase' && this.supabase)) return;
+        const { error } = await this.supabase.storage.from('avatars').remove([path]);
+        if (error) console.warn('Supabase delete avatar error:', error);
+    },
+
     async deleteMember(id) {
         if (this.mode === 'supabase' && this.supabase) {
             // clear spouse/parent refs then delete
